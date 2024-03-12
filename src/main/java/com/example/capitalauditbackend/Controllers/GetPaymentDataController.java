@@ -7,26 +7,31 @@ import com.example.capitalauditbackend.model.user;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.jsonwebtoken.Claims;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@RestController
 public class GetPaymentDataController {
 
 
     private final Gson gson = new Gson();
-    @GetMapping("/postPaymentData")
-    public ResponseEntity<String> login(@RequestBody String jsonString) {
-        return getPaymentDataHandler(jsonString);
+    @GetMapping("/getPaymentData")
+    public ResponseEntity<String> login(@RequestHeader HttpHeaders headers) {
+        return getPaymentDataHandler(headers);
     }
 
-    private ResponseEntity<String> getPaymentDataHandler(String jsonString)
+    private ResponseEntity<String> getPaymentDataHandler(HttpHeaders headers)
     {
-        JsonObject jsonObject = gson.fromJson(jsonString, JsonObject.class);
-        String token = jsonObject.get("token").getAsString();
+        System.out.println("Executing getPaymentData Handler...");
+        String token = headers.getFirst("access_token");
         Claims claim = Authentication.decodeToken(token);
         if(Authentication.tokenAuthenticator(claim))
         {
@@ -34,9 +39,10 @@ public class GetPaymentDataController {
             int user_id = user.getUser_id();
             try
             {
-                List<PaymentData> paymentDataList = new ArrayList<>();
-                paymentDataList = db.getPaymentData(user_id);
+                List<PaymentData> paymentDataList = db.getPaymentData(user_id);
+                System.out.println("Executing getPaymentData Handler... success");
                 return response(0, "Success.", paymentDataList);
+
             }
             catch (Exception e)
             {

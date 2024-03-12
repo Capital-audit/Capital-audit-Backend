@@ -8,24 +8,33 @@ import java.util.List;
 public class DatabaseConnector {
 
     private static Connection connection;
+    private static DatabaseConnector instance;
     public void connect() {
 
         try {
 
             String url = "jdbc:sqlite:C:/Users/benan/IdeaProjects/CapitalAuditBackend/database.db";
-             connection = DriverManager.getConnection(url);
+            connection = DriverManager.getConnection(url);
 
             System.out.println("Connection to SQLite has been established.");
-
+            setConnection(connection);
         }
         catch(SQLException e)
         {
                 System.out.println(e.getMessage());
         }
     }
+    public static DatabaseConnector getInstance() {
+        if (instance == null) {
+            instance = new DatabaseConnector();
+            instance.connect();
+        }
+        return instance;
+    }
 
     public boolean ExecuteLoginQuery(String username, String password)
     {
+        System.out.println("Executing login query");
         String query = "SELECT * FROM users WHERE username = ? AND password = ?";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -37,10 +46,12 @@ public class DatabaseConnector {
             // Execute query
             try (ResultSet resultSet = statement.executeQuery()) {
                 // Check if the result set has any rows (user found)
+                System.out.println("Success");
                 return resultSet.next();
             }
         } catch (SQLException e) {
             // Handle exceptions
+            e.printStackTrace();
             return false;
         }
     }
@@ -59,11 +70,13 @@ public class DatabaseConnector {
             statement.setDate(5, Date.valueOf(date)); // Assuming date is in "yyyy-MM-dd" format
             statement.setInt(6, user_id);
 
-
             // Execute query
             try (ResultSet resultSet = statement.executeQuery()) {
                 int rowsInserted = statement.executeUpdate();
-                return rowsInserted > 0;
+                if(rowsInserted > 0)
+                {
+                    return true;
+                }
             } catch(Exception e) {
                 return false;
             }
@@ -71,6 +84,7 @@ public class DatabaseConnector {
             // Handle exceptions
             return false;
         }
+        return false;
     }
 
     public List<PaymentData> getPaymentData(int user_id)
@@ -147,7 +161,7 @@ public class DatabaseConnector {
         return 1;
     }
 
-    public Connection getConnection()
+    public static Connection getConnection()
     {
         return DatabaseConnector.connection;
     }

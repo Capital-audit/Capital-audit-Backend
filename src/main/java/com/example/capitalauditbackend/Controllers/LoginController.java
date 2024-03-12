@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.xml.crypto.Data;
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 public class LoginController {
 
@@ -26,7 +30,8 @@ public class LoginController {
     }
     private static int loginHandler(String username, String password)
     {
-        DatabaseConnector db = new DatabaseConnector();
+        DatabaseConnector db = DatabaseConnector.getInstance();
+        db.connect();
         boolean successfulQuery = db.ExecuteLoginQuery(username, password);
 
         if (successfulQuery)
@@ -43,13 +48,17 @@ public class LoginController {
         if (result == 0)
         {
             String token = Authentication.generateToken(username);
-            return ResponseEntity.ok()
-                    .header("Authorization", token)
-                    .body("Login successful");
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("access_token", token);
+            responseBody.put("success", "true");
+            Gson gson = new Gson();
+            String jsonBody = gson.toJson(responseBody);
+
+            return ResponseEntity.ok().body(jsonBody);
         }
         else
         {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("login failed");
         }
     }
 }
