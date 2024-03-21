@@ -59,9 +59,10 @@ public class DatabaseConnector {
     public boolean PostPaymentData(int price, String category, boolean debit_credit, boolean cleared, String date, int user_id)
     {
         String query = "INSERT INTO transactions (price, category, debit_credit, cleared, date, user_id) VALUES (?, ?, ?, ?, ?, ?)";
+        connect();
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
-
+            System.out.println("binding parameters");
             // Bind parameters
             statement.setInt(1, price);
             statement.setString(2, category);
@@ -75,21 +76,30 @@ public class DatabaseConnector {
                 int rowsInserted = statement.executeUpdate();
                 if(rowsInserted > 0)
                 {
+                    System.out.println("success added data.");
                     return true;
                 }
+                else
+                {
+                    System.out.println("failed to add data.");
+                    return false;
+                }
             } catch(Exception e) {
+                System.out.println("failed" + e);
+
                 return false;
             }
         } catch (SQLException e) {
             // Handle exceptions
+            System.out.println("failed" + e);
             return false;
         }
-        return false;
     }
 
     public List<PaymentData> getPaymentData(int user_id)
     {
         String query = "SELECT * FROM transactions WHERE user_id = ?;";
+        connect();
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
@@ -107,7 +117,6 @@ public class DatabaseConnector {
                     paymentData.setDebit_credit(resultSet.getBoolean("debit_credit"));
                     paymentData.setCleared(resultSet.getBoolean("cleared"));
                     paymentData.setDate(resultSet.getString("date"));
-                    paymentData.setID(resultSet.getInt("user_id"));
                     paymentDataList.add(paymentData);
 
                 }
@@ -122,11 +131,12 @@ public class DatabaseConnector {
     public boolean checkUsername(String username)
     {
         String query = "SELECT * FROM users WHERE username = ?";
+        connect();
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             // Bind parameters
             statement.setString(1, username);
-
+            System.out.println(statement);
             // Execute query
             try (ResultSet resultSet = statement.executeQuery()) {
                 // Check if the result set has any rows (user found)
@@ -134,6 +144,7 @@ public class DatabaseConnector {
             }
         } catch (SQLException e) {
             // Handle exceptions
+            System.out.println(e);
             return false;
         }
     }

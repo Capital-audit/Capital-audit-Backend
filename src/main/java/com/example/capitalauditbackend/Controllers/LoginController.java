@@ -48,6 +48,7 @@ public class LoginController {
         if (result == 0)
         {
             String token = Authentication.generateToken(username);
+            System.out.println(token);
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("access_token", token);
             responseBody.put("success", "true");

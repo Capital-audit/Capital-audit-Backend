@@ -25,6 +25,7 @@ public class PostPaymentDataController {
         JsonObject jsonObject = gson.fromJson(jsonString, JsonObject.class);
         String token = jsonObject.get("token").getAsString();
         Claims claim = Authentication.decodeToken(token);
+        System.out.println(jsonObject.toString());
         if(Authentication.tokenAuthenticator(claim))
         {
             DatabaseConnector db = new DatabaseConnector();

@@ -45,13 +45,21 @@ public class Authentication {
             return false;
         }
         String username = claim.getSubject();
+        System.out.println("Failed at date");
         if(checkExpired(claim))
         {
-            DatabaseConnector db = new DatabaseConnector();
-             if(db.checkUsername(username))
+            DatabaseConnector db = DatabaseConnector.getInstance();
+            System.out.println("Failed at db");
+            System.out.println(username);
+            if(db == null)
+            {
+                return false;
+            }
+            if(db.checkUsername(username))
              {
                  user.setUsername(username);
                  int id = db.getUserId(username);
+                 System.out.println("Failed at doing smth");
                  if(id != 0){
                     user.setUser_id(id);
                  }
