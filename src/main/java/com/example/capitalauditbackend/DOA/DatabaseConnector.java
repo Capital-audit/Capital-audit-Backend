@@ -2,6 +2,8 @@ package com.example.capitalauditbackend.DOA;
 import com.example.capitalauditbackend.model.PaymentData;
 
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,35 +66,40 @@ public class DatabaseConnector {
              PreparedStatement statement = connection.prepareStatement(query)) {
             System.out.println("binding parameters");
             // Bind parameters
+
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            java.util.Date parsedDate = sdf.parse(date); // Parse the input string into a java.util.Date object
+            java.sql.Date sqlDate = new java.sql.Date(parsedDate.getTime());
+            System.out.println(sqlDate);
+            System.out.println(sqlDate.toString());
+            System.out.println(sqlDate.toLocalDate());
+// Now you can use sqlDate in your PreparedStatement
             statement.setInt(1, price);
             statement.setString(2, category);
             statement.setBoolean(3, debit_credit);
             statement.setBoolean(4, cleared);
-            statement.setDate(5, Date.valueOf(date)); // Assuming date is in "yyyy-MM-dd" format
+            statement.setString(5, date); // Assuming date is in "yyyy-MM-dd" format
             statement.setInt(6, user_id);
 
             // Execute query
-            try (ResultSet resultSet = statement.executeQuery()) {
-                int rowsInserted = statement.executeUpdate();
-                if(rowsInserted > 0)
-                {
-                    System.out.println("success added data.");
-                    return true;
-                }
-                else
-                {
-                    System.out.println("failed to add data.");
-                    return false;
-                }
-            } catch(Exception e) {
-                System.out.println("failed" + e);
-
+            int rowsInserted = statement.executeUpdate();
+            if(rowsInserted > 0)
+            {
+                System.out.println("success added data.");
+                return true;
+            }
+            else
+            {
+                System.out.println("failed to add data.");
                 return false;
             }
         } catch (SQLException e) {
             // Handle exceptions
             System.out.println("failed" + e);
             return false;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
     }
 

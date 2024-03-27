@@ -39,7 +39,6 @@ public class Authentication {
 
     public static boolean tokenAuthenticator(Claims claim)
     {
-        Date now = new Date();
         if (claim == null)
         {
             return false;
@@ -77,6 +76,7 @@ public class Authentication {
         }
         return false;
     }
+
 
     public static boolean checkExpired(Claims claim)
     {

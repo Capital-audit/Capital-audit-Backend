@@ -10,28 +10,32 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.http.HttpHeaders;
 @RestController
 public class PostPaymentDataController {
     private final Gson gson = new Gson();
 
     @PostMapping("/postPaymentData")
-    public ResponseEntity<String> postPayment(@RequestBody String jsonString) {
-        return postPaymentHandler(jsonString);
-    }
-    private ResponseEntity<String> postPaymentHandler(String jsonString)
+    public ResponseEntity<String> postPayment(@RequestHeader HttpHeaders headers, @RequestBody String jsonString)
     {
+        return postPaymentHandler(jsonString, headers);
+    }
+    private ResponseEntity<String> postPaymentHandler(String jsonString, HttpHeaders headers)
+    {
+
+        System.out.println("postPaymentHandler executed...");
         JsonObject jsonObject = gson.fromJson(jsonString, JsonObject.class);
-        String token = jsonObject.get("token").getAsString();
+        String token = headers.getFirst("access_token");
         Claims claim = Authentication.decodeToken(token);
         System.out.println(jsonObject.toString());
         if(Authentication.tokenAuthenticator(claim))
         {
             DatabaseConnector db = new DatabaseConnector();
-            int price = jsonObject.get("price").getAsInt();
+        int price = jsonObject.get("price").getAsInt();
             String category = jsonObject.get("category").getAsString();
-            boolean debit_credit = jsonObject.get("debit_credit").getAsBoolean();
+            boolean debit_credit = jsonObject.get("debitCredit").getAsBoolean();
             boolean cleared = jsonObject.get("cleared").getAsBoolean();
             String date = jsonObject.get("date").getAsString();
             if(date == null)
@@ -42,6 +46,7 @@ public class PostPaymentDataController {
             {
                 int user_id = user.getUser_id();
                 db.PostPaymentData(price, category, debit_credit, cleared, date, user_id);
+                System.out.println("postPaymentHandler executed...");
                 return response(0, "Success.");
             }
         }
@@ -56,8 +61,11 @@ public class PostPaymentDataController {
     {
         if (result == 0)
         {
-            return ResponseEntity.ok()
-                    .body(message);
+            JsonObject successResponse = new JsonObject();
+            successResponse.addProperty("success", true);
+            successResponse.addProperty("message", "Payment successful.");
+            return ResponseEntity.ok().body(successResponse.toString());
+
         }
         else
         {
